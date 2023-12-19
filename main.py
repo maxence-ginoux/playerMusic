@@ -1,20 +1,15 @@
 from tkinter import *
+from tkinter import filedialog
 from pygame import mixer
 import os
-import pygame
-
-# Initialisation
-mixer.init()
-pygame.init()
-
-root = Tk()
-root.title("playerMusic")
-
 
 def play_musique():
-    currentsong = playlist.get(ACTIVE)
-    mixer.music.load(currentsong)
-    mixer.music.play()
+    current_song = playlist.curselection()
+    if current_song:
+        index = current_song[0]
+        song = playlist.get(index)
+        mixer.music.load(os.path.join(music_folder, song))
+        mixer.music.play()
 
 def pause_musique():
     mixer.music.pause()
@@ -22,8 +17,17 @@ def pause_musique():
 def stop_musique():
     mixer.music.stop()
 
-def resume_musique():
+def reprendre_musique():
     mixer.music.unpause()
+
+def volume_musique(valeur):
+    volume= float(valeur) / 100
+    mixer.music.set_volume(volume)
+
+def ajouter_musique():
+    files= filedialog.askopenfilenames(filetypes=[("MP3 files","*.mp3")])
+    for file in files:
+        playlist.insert(END, file)
 
 def suivant_musique():
     current_index = playlist.curselection()
@@ -39,18 +43,22 @@ def precedent_musique():
         playlist.selection_clear(0, END)
         playlist.selection_set(prev_index)
 
-# Liste des chansons
-playlist = Listbox(root, selectmode=SINGLE, bg="black", fg="white", font=('arial', 15), width=40)
+mixer.init()
+
+root = Tk()
+root.title('Lecteur de Media')
+
+
+playlist = Listbox(root, selectmode=SINGLE, bg="black", fg="white", font=('Arial', 15), width=40)
 playlist.grid(columnspan=5)
 
-# Chargement des chansons du répertoire courant
-os.chdir("C:/Users/ginma/Documents/La Plateforme/playerMusic/playerMusic/musique/")
-songs = os.listdir()
+music_folder = "C:/Users/ginma/Documents/La Plateforme/playerMusic/playerMusic/musique/"  
+music_files = [file for file in os.listdir(music_folder) if file.endswith('.mp3')]
 
-for s in songs:
-    playlist.insert(END, s)
+for file in music_files:
+    playlist.insert(END, file)
 
-# Boutons interactifs
+# Boutons
 precedent_bouton = Button(root, text="précédent", command=precedent_musique)
 precedent_bouton.grid(row=1, column=0)
 
@@ -60,8 +68,8 @@ play_bouton.grid(row=1, column=1)
 pause_bouton = Button(root, text="Pause", command=pause_musique)
 pause_bouton.grid(row=1, column=2)
 
-Resume_bouton = Button(root, text="Resume", command=resume_musique)
-Resume_bouton.grid(row=1, column=3)
+reprendre_bouton = Button(root, text="Reprendre", command=reprendre_musique)
+reprendre_bouton.grid(row=1, column=3)
 
 stop_bouton = Button(root, text="Stop", command=stop_musique)
 stop_bouton.grid(row=1, column=4)
@@ -69,5 +77,12 @@ stop_bouton.grid(row=1, column=4)
 suivant_bouton = Button(root, text="suivant", command=suivant_musique)
 suivant_bouton.grid(row=1, column=5)
 
+volume_bouton = Scale (root, from_=0,to=100, orient=HORIZONTAL, command=volume_musique)
+volume_bouton.set(50)
+volume_bouton.grid(row=2, column=3,rowspan=4)
 
-mainloop()
+ajouter_music_bouton = Button(root, text="ajouter piste", command= ajouter_musique)
+ajouter_music_bouton.grid(row=2, columnspan=2,column=0)
+
+
+root.mainloop()
